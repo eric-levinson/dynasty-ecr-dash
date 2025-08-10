@@ -26,7 +26,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -35,6 +36,14 @@ export default {
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
 				},
 				muted: {
 					DEFAULT: 'hsl(var(--muted))',
@@ -61,7 +70,30 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				dynasty: {
+					purple: 'hsl(var(--dynasty-purple))',
+					'purple-light': 'hsl(var(--dynasty-purple-light))',
+					'purple-dark': 'hsl(var(--dynasty-purple-dark))'
+				},
+				tier: {
+					elite: 'hsl(var(--tier-elite))',
+					'high-end': 'hsl(var(--tier-high-end))',
+					solid: 'hsl(var(--tier-solid))',
+					upside: 'hsl(var(--tier-upside))',
+					watch: 'hsl(var(--tier-watch))'
+				},
+				veterans: 'hsl(var(--veterans))',
+				'young-talent': 'hsl(var(--young-talent))'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-background': 'var(--gradient-background)',
+				'gradient-card': 'var(--gradient-card)'
+			},
+			boxShadow: {
+				card: 'var(--shadow-card)',
+				'card-hover': 'var(--shadow-card-hover)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -69,6 +101,14 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' }
+				},
+				'slide-up': {
+					'0%': { transform: 'translateY(10px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
+				},
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -87,6 +127,8 @@ export default {
 				}
 			},
 			animation: {
+				'fade-in': 'fade-in 0.5s ease-in-out',
+				'slide-up': 'slide-up 0.3s ease-out',
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
 			}

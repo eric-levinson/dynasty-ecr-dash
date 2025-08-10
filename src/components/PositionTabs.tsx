@@ -6,8 +6,7 @@ const positions = [
   { id: "WR", name: "WR", active: false },
   { id: "TE", name: "TE", active: false },
   { id: "LB", name: "LB", active: false },
-  { id: "EDGE", name: "EDGE", active: false },
-  { id: "IDL", name: "IDL", active: false },
+  { id: "DL", name: "DL", active: false },
   { id: "DB", name: "DB", active: false },
 ];
 

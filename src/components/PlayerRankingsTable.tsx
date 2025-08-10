@@ -4,10 +4,12 @@ import { Plus } from "lucide-react";
 
 interface Player {
   player: string;
-  team: string;
   pos: string;
   ecr: number;
-  mergename: string;
+  age: number;
+  rdr_team: string;
+  team_full: string;
+  years_of_experience: number | null;
 }
 
 interface PlayerRankingsTableProps {
@@ -65,7 +67,7 @@ export function PlayerRankingsTable({
             <div className="space-y-2">
               {players.slice(0, 10).map((player, index) => (
                 <div 
-                  key={player.mergename}
+                  key={`${player.player}-${player.ecr}`}
                   className="grid grid-cols-6 gap-4 items-center py-3 hover:bg-muted/50 rounded-lg px-2 transition-colors"
                 >
                   <div className="font-medium text-foreground">
@@ -75,7 +77,7 @@ export function PlayerRankingsTable({
                     {player.player}
                   </div>
                   <div className="text-muted-foreground">
-                    {player.team}
+                    {player.rdr_team}
                   </div>
                   <div>
                     <Badge variant="secondary" className="text-xs">
@@ -113,9 +115,9 @@ export function PlayerRankingsTable({
 }
 
 function getTierFromRank(rank: number): string {
-  if (rank <= 3) return "Elite";
-  if (rank <= 8) return "High-End";
-  if (rank <= 15) return "Solid";
-  if (rank <= 25) return "Upside";
-  return "Watch";
+  if (rank <= 5) return "Tier 1";
+  if (rank <= 15) return "Tier 2";
+  if (rank <= 30) return "Tier 3";
+  if (rank <= 50) return "Tier 4";
+  return "Tier 5";
 }

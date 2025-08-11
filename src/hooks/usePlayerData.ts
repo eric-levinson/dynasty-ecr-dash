@@ -25,7 +25,7 @@ export function usePlayerData() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .rpc('get_dynasty_ranks');
+        .rpc('get_dynasty_ranks' as any);
 
       if (error) {
         console.error('Error fetching players:', error);
@@ -33,7 +33,7 @@ export function usePlayerData() {
         return;
       }
 
-      setPlayers(data || []);
+      setPlayers((data as unknown as Player[]) || []);
     } catch (err) {
       console.error('Unexpected error:', err);
       setError('Failed to fetch players');

@@ -20,6 +20,14 @@ interface PlayerRankingsTableProps {
   onAddPlayer: () => void;
 }
 
+const tierColors: Record<string, string> = {
+  "Tier 1": "bg-yellow-100 text-tier-elite",
+  "Tier 2": "bg-purple-100 text-tier-high-end",
+  "Tier 3": "bg-green-100 text-tier-solid",
+  "Tier 4": "bg-purple-50 text-tier-upside",
+  "Tier 5": "bg-gray-100 text-tier-watch",
+};
+
 export function PlayerRankingsTable({ 
   title, 
   subtitle, 
@@ -54,9 +62,11 @@ export function PlayerRankingsTable({
         ) : (
           <>
             {/* Table Header */}
-            <div className="grid grid-cols-6 gap-4 pb-3 mb-4 border-b border-border text-sm font-medium text-muted-foreground">
+            <div className="grid grid-cols-8 gap-4 pb-3 mb-4 border-b border-border text-sm font-medium text-muted-foreground">
               <div>RANK</div>
               <div>PLAYER NAME</div>
+              <div>POSITION</div>
+              <div>AGE</div>
               <div>TEAM</div>
               <div>TIER</div>
               <div>NOTES</div>
@@ -65,10 +75,10 @@ export function PlayerRankingsTable({
 
             {/* Table Rows */}
             <div className="space-y-2">
-              {players.slice(0, 10).map((player, index) => (
+              {players.slice(0, 300).map((player, index) => (
                 <div 
-                  key={`${player.player}-${player.ecr}`}
-                  className="grid grid-cols-6 gap-4 items-center py-3 hover:bg-muted/50 rounded-lg px-2 transition-colors"
+                  key={`${player.player}-${player.ecr}-${index}`}
+                  className="grid grid-cols-8 gap-4 items-center py-3 hover:bg-muted/50 rounded-lg px-2 transition-colors"
                 >
                   <div className="font-medium text-foreground">
                     {player.ecr || index + 1}
@@ -77,10 +87,19 @@ export function PlayerRankingsTable({
                     {player.player}
                   </div>
                   <div className="text-muted-foreground">
-                    {player.rdr_team}
+                    {player.pos}
+                  </div>
+                  <div className="text-muted-foreground">
+                    {player.age}
+                  </div>
+                  <div className="text-muted-foreground">
+                    {player.rdr_team || "No Team"}
                   </div>
                   <div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${tierColors[getTierFromRank(player.ecr || index + 1)]}`}
+                    >
                       {getTierFromRank(player.ecr || index + 1)}
                     </Badge>
                   </div>

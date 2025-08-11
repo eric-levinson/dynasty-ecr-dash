@@ -25,7 +25,7 @@ export function usePlayerData() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .rpc('get_dynasty_ranks' as any);
+        .rpc('get_dynasty_ranks') as any;
 
       if (error) {
         console.error('Error fetching players:', error);
@@ -33,7 +33,18 @@ export function usePlayerData() {
         return;
       }
 
-      setPlayers((data as unknown as Player[]) || []);
+      // Transform and validate the data
+      const transformedPlayers = (data || []).map((row: any) => ({
+        player: row.player,
+        pos: row.pos,
+        ecr: Number(row.ecr),
+        age: Number(row.age),
+        rdr_team: row.rdr_team,
+        team_full: row.team_full,
+        years_of_experience: row.years_of_experience ? Number(row.years_of_experience) : null
+      }));
+
+      setPlayers(transformedPlayers);
     } catch (err) {
       console.error('Unexpected error:', err);
       setError('Failed to fetch players');

@@ -5710,6 +5710,46 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_dynasty_ranks: {
+        Row: {
+          age: number | null
+          best: number | null
+          bye: number | null
+          cbs_id: number | null
+          ecr: number | null
+          ecr_type: string | null
+          fp_page: string | null
+          id: number | null
+          mergename: string | null
+          page_type: string | null
+          player: string | null
+          player_filename: string | null
+          player_image_url: number | null
+          player_owned_avg: number | null
+          player_owned_espn: number | null
+          player_owned_yahoo: number | null
+          player_square_image_url: number | null
+          pos: string | null
+          rank_delta: number | null
+          rdr_team: string | null
+          scrape_date: string | null
+          sd: number | null
+          sportsdata_id: number | null
+          team: string | null
+          team_espn: string | null
+          team_fo: string | null
+          team_full: string | null
+          team_location: string | null
+          team_nfl: string | null
+          team_nickname: string | null
+          team_pff: number | null
+          tm: string | null
+          worst: number | null
+          yahoo_id: number | null
+          years_of_experience: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_staging: {
@@ -5728,6 +5768,18 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           source_table: string
+        }[]
+      }
+      get_dynasty_ranks: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          player: string
+          pos: string
+          ecr: number
+          age: number
+          rdr_team: string
+          team_full: string
+          years_of_experience: number
         }[]
       }
       promote_staging_to_public: {

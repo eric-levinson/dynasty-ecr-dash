@@ -5,10 +5,7 @@ interface Player {
   player: string;
   pos: string;
   ecr: number;
-  age: number;
-  rdr_team: string;
-  team_full: string;
-  years_of_experience: number | null;
+  team: string;
 }
 
 export function usePlayerData() {
@@ -24,15 +21,11 @@ export function usePlayerData() {
     try {
       setLoading(true);
       
-      // Use rpc to query the view until types are updated
-      const { data, error } = await supabase.rpc('exec_sql', {
-        query: `
-          SELECT player, pos, ecr, age, rdr_team, team_full, years_of_experience
-          FROM public.vw_dynasty_ranks 
-          WHERE ecr_type = 'do' 
-          ORDER BY ecr ASC
-        `
-      });
+      const { data, error } = await supabase
+        .from('dynastyprocess_fpecr_latest')
+        .select('player, pos, ecr, team')
+        .eq('ecr_type', 'do')
+        .order('ecr', { ascending: true });
 
       if (error) {
         console.error('Error fetching players:', error);
@@ -40,17 +33,7 @@ export function usePlayerData() {
         return;
       }
 
-      // Transform the RPC result to our Player interface
-      const transformedData = (data || []).map((row: any) => ({
-        player: row.player,
-        pos: row.pos,
-        ecr: row.ecr,
-        age: row.age,
-        rdr_team: row.rdr_team,
-        team_full: row.team_full,
-        years_of_experience: row.years_of_experience
-      }));
-      setPlayers(transformedData);
+      setPlayers(data || []);
     } catch (err) {
       console.error('Unexpected error:', err);
       setError('Failed to fetch players');
@@ -70,17 +53,13 @@ export function usePlayerData() {
   };
 
   const getVeteranPlayers = (position: string) => {
-    // Veterans are players with 2+ years of experience
-    return getPlayersByPosition(position).filter(player => 
-      player.years_of_experience !== null && player.years_of_experience >= 2
-    );
+    // Use ECR as proxy for veterans (better rankings = more established)
+    return getPlayersByPosition(position).filter(player => player.ecr <= 20);
   };
 
   const getYoungPlayers = (position: string) => {
-    // Young players are rookies (null or 0) and sophomores (1)
-    return getPlayersByPosition(position).filter(player => 
-      player.years_of_experience === null || player.years_of_experience <= 1
-    );
+    // Young players have higher ECR (less established)
+    return getPlayersByPosition(position).filter(player => player.ecr > 20);
   };
 
   const searchPlayers = (query: string) => {
@@ -88,8 +67,7 @@ export function usePlayerData() {
     
     return players.filter(player => 
       player.player.toLowerCase().includes(query.toLowerCase()) ||
-      player.team_full.toLowerCase().includes(query.toLowerCase()) ||
-      player.rdr_team.toLowerCase().includes(query.toLowerCase())
+      player.team.toLowerCase().includes(query.toLowerCase())
     );
   };
 

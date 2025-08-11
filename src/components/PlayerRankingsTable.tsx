@@ -6,7 +6,10 @@ interface Player {
   player: string;
   pos: string;
   ecr: number;
-  team: string;
+  age: number;
+  rdr_team: string;
+  team_full: string;
+  years_of_experience: number | null;
 }
 
 interface PlayerRankingsTableProps {
@@ -74,7 +77,7 @@ export function PlayerRankingsTable({
                     {player.player}
                   </div>
                   <div className="text-muted-foreground">
-                    {player.team}
+                    {player.rdr_team}
                   </div>
                   <div>
                     <Badge variant="secondary" className="text-xs">

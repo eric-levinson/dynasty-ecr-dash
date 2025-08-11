@@ -5,7 +5,10 @@ interface Player {
   player: string;
   pos: string;
   ecr: number;
-  team: string;
+  age: number;
+  rdr_team: string;
+  team_full: string;
+  years_of_experience: number | null;
 }
 
 export function usePlayerData() {
@@ -22,10 +25,7 @@ export function usePlayerData() {
       setLoading(true);
       
       const { data, error } = await supabase
-        .from('dynastyprocess_fpecr_latest')
-        .select('player, pos, ecr, team')
-        .eq('ecr_type', 'do')
-        .order('ecr', { ascending: true });
+        .rpc('get_dynasty_ranks');
 
       if (error) {
         console.error('Error fetching players:', error);
@@ -53,13 +53,17 @@ export function usePlayerData() {
   };
 
   const getVeteranPlayers = (position: string) => {
-    // Use ECR as proxy for veterans (better rankings = more established)
-    return getPlayersByPosition(position).filter(player => player.ecr <= 20);
+    // Veterans are players with 2+ years of experience
+    return getPlayersByPosition(position).filter(player => 
+      player.years_of_experience !== null && player.years_of_experience >= 2
+    );
   };
 
   const getYoungPlayers = (position: string) => {
-    // Young players have higher ECR (less established)
-    return getPlayersByPosition(position).filter(player => player.ecr > 20);
+    // Young players are rookies (null or 0) and sophomores (1)
+    return getPlayersByPosition(position).filter(player => 
+      player.years_of_experience === null || player.years_of_experience <= 1
+    );
   };
 
   const searchPlayers = (query: string) => {
@@ -67,7 +71,8 @@ export function usePlayerData() {
     
     return players.filter(player => 
       player.player.toLowerCase().includes(query.toLowerCase()) ||
-      player.team.toLowerCase().includes(query.toLowerCase())
+      player.team_full.toLowerCase().includes(query.toLowerCase()) ||
+      player.rdr_team.toLowerCase().includes(query.toLowerCase())
     );
   };
 

@@ -24,10 +24,10 @@ export function usePlayerData() {
     try {
       setLoading(true);
       
-      // Try the view first, fallback to table if timeout
+      // Fallback to original table due to view timeout issues
       const { data, error } = await supabase
-        .from('vw_dynasty_ranks')
-        .select('player, pos, ecr, age, rdr_team, team_full, years_of_experience')
+        .from('dynastyprocess_fpecr_latest')
+        .select('player, pos, ecr, team')
         .eq('ecr_type', 'do')
         .order('ecr', { ascending: true });
 
@@ -37,15 +37,18 @@ export function usePlayerData() {
         return;
       }
 
-      // Use actual data from the view
+      // TEMPORARY: Use ECR as proxy for experience until view is optimized
+      // This is not the final logic - we need years_of_experience from the view
       const transformedPlayers = (data || []).map((row: any) => ({
         player: row.player,
         pos: row.pos,
         ecr: Number(row.ecr),
-        age: Number(row.age) || 25,
-        rdr_team: row.rdr_team,
-        team_full: row.team_full,
-        years_of_experience: row.years_of_experience !== null ? Number(row.years_of_experience) : null
+        age: 25, // Placeholder
+        rdr_team: row.team,
+        team_full: row.team,
+        // TEMPORARY LOGIC: Using ECR as proxy (NOT FINAL)
+        // Real logic should be: >= 2 years = veteran, 0-1 years = young
+        years_of_experience: row.ecr <= 30 ? 3 : 1 // Temporary approximation
       }));
 
       setPlayers(transformedPlayers);

@@ -26,7 +26,7 @@ export function usePlayerData() {
       
       const { data, error } = await supabase
         .from('dynastyprocess_fpecr_latest')
-        .select('player, pos, ecr, team as rdr_team')
+        .select('player, pos, ecr, team')
         .eq('ecr_type', 'do')
         .order('ecr', { ascending: true });
 
@@ -42,8 +42,8 @@ export function usePlayerData() {
         pos: row.pos,
         ecr: Number(row.ecr),
         age: 25, // Default age estimate
-        rdr_team: row.rdr_team || row.team,
-        team_full: row.rdr_team || row.team,
+        rdr_team: row.team,
+        team_full: row.team,
         years_of_experience: row.ecr <= 50 ? (row.ecr <= 20 ? 3 : 1) : 0 // Estimate based on rank
       }));
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Player {
+export interface Player {
   player: string;
   pos: string;
   ecr: number;
@@ -40,7 +40,15 @@ export function usePlayerData() {
 
       // Transform data with real years_of_experience from the view
       // This is the correct logic now that we have the proper data
-      const transformedPlayers = (data || []).map((row: any) => ({
+      interface Row {
+        player: string;
+        pos: string;
+        ecr: number;
+        team: string;
+        years_of_experience: number | null;
+      }
+
+      const transformedPlayers = (data || []).map((row: Row) => ({
         player: row.player,
         pos: row.pos,
         ecr: Number(row.ecr),
@@ -102,6 +110,7 @@ export function usePlayerData() {
     getVeteranPlayers,
     getYoungPlayers,
     searchPlayers,
-    refetch: fetchPlayers
+    refetch: fetchPlayers,
+    setPlayers
   };
 }

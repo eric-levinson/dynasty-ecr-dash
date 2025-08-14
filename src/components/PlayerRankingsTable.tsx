@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useEffect, useState, type DragEvent } from "react";
 
 interface Player {
   player: string;
@@ -28,14 +29,37 @@ const tierColors: Record<string, string> = {
   "Tier 5": "bg-gray-100 text-tier-watch",
 };
 
-export function PlayerRankingsTable({ 
-  title, 
-  subtitle, 
-  players, 
+export function PlayerRankingsTable({
+  title,
+  subtitle,
+  players,
   variant,
-  onAddPlayer 
+  onAddPlayer
 }: PlayerRankingsTableProps) {
   const headerColor = variant === "veterans" ? "bg-veterans" : "bg-young-talent";
+
+  // Maintain a local copy of players so we can reorder them
+  const [playerList, setPlayerList] = useState<Player[]>(players);
+
+  // When the incoming players prop changes (e.g. search or position change)
+  // reset our local state to match the new list
+  useEffect(() => {
+    setPlayerList(players);
+  }, [players]);
+
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, index: number) => {
+    e.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>, dropIndex: number) => {
+    const dragIndex = Number(e.dataTransfer.getData("text/plain"));
+    if (Number.isNaN(dragIndex) || dragIndex === dropIndex) return;
+
+    const updated = [...playerList];
+    const [moved] = updated.splice(dragIndex, 1);
+    updated.splice(dropIndex, 0, moved);
+    setPlayerList(updated);
+  };
   
   return (
     <div className="bg-gradient-card rounded-lg shadow-card overflow-hidden">
@@ -47,11 +71,11 @@ export function PlayerRankingsTable({
 
       {/* Table */}
       <div className="p-4">
-        {players.length === 0 ? (
+        {playerList.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">No players found</p>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onAddPlayer}
               className="gap-2"
             >
@@ -75,13 +99,17 @@ export function PlayerRankingsTable({
 
             {/* Table Rows */}
             <div className="space-y-2">
-              {players.slice(0, 300).map((player, index) => (
-                <div 
-                  key={`${player.player}-${player.ecr}-${index}`}
-                  className="grid grid-cols-8 gap-4 items-center py-3 hover:bg-muted/50 rounded-lg px-2 transition-colors"
+              {playerList.slice(0, 300).map((player, index) => (
+                <div
+                  key={player.player}
+                  draggable
+                  onDragStart={e => handleDragStart(e, index)}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => handleDrop(e, index)}
+                  className="grid grid-cols-8 gap-4 items-center py-3 hover:bg-muted/50 rounded-lg px-2 transition-colors cursor-move"
                 >
                   <div className="font-medium text-foreground">
-                    {player.ecr || index + 1}
+                    {index + 1}
                   </div>
                   <div className="font-medium text-foreground">
                     {player.player}
@@ -98,9 +126,9 @@ export function PlayerRankingsTable({
                   <div>
                     <Badge
                       variant="secondary"
-                      className={`text-xs ${tierColors[getTierFromRank(player.ecr || index + 1)]}`}
+                      className={`text-xs ${tierColors[getTierFromRank(index + 1)]}`}
                     >
-                      {getTierFromRank(player.ecr || index + 1)}
+                      {getTierFromRank(index + 1)}
                     </Badge>
                   </div>
                   <div className="text-muted-foreground text-sm">

@@ -19,6 +19,7 @@ interface PlayerRankingsTableProps {
   players: Player[];
   variant: "veterans" | "young";
   onAddPlayer: () => void;
+  onReorder: (players: Player[]) => void;
 }
 
 const tierColors: Record<string, string> = {
@@ -34,7 +35,8 @@ export function PlayerRankingsTable({
   subtitle,
   players,
   variant,
-  onAddPlayer
+  onAddPlayer,
+  onReorder
 }: PlayerRankingsTableProps) {
   const headerColor = variant === "veterans" ? "bg-veterans" : "bg-young-talent";
 
@@ -59,6 +61,7 @@ export function PlayerRankingsTable({
     const [moved] = updated.splice(dragIndex, 1);
     updated.splice(dropIndex, 0, moved);
     setPlayerList(updated);
+    onReorder(updated);
   };
   
   return (

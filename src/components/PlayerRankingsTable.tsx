@@ -1,17 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useEffect, useState, type DragEvent } from "react";
-
-interface Player {
-  player: string;
-  pos: string;
-  ecr: number;
-  age: number;
-  rdr_team: string;
-  team_full: string;
-  years_of_experience: number | null;
-}
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+  type DragEvent,
+} from "react";
+import type { Player } from "@/hooks/usePlayerData";
 
 interface PlayerRankingsTableProps {
   title: string;
@@ -19,6 +16,12 @@ interface PlayerRankingsTableProps {
   players: Player[];
   variant: "veterans" | "young";
   onAddPlayer: () => void;
+  onReorder?: (updated: Player[]) => void;
+  onEditPlayer: (player: Player) => void;
+}
+
+export interface PlayerRankingsTableHandle {
+  getPlayerList: () => Player[];
 }
 
 const tierColors: Record<string, string> = {
@@ -29,13 +32,18 @@ const tierColors: Record<string, string> = {
   "Tier 5": "bg-gray-100 text-tier-watch",
 };
 
-export function PlayerRankingsTable({
+export const PlayerRankingsTable = forwardRef<
+  PlayerRankingsTableHandle,
+  PlayerRankingsTableProps
+>(function PlayerRankingsTable({
   title,
   subtitle,
   players,
   variant,
-  onAddPlayer
-}: PlayerRankingsTableProps) {
+  onAddPlayer,
+  onReorder,
+  onEditPlayer,
+}, ref) {
   const headerColor = variant === "veterans" ? "bg-veterans" : "bg-young-talent";
 
   // Maintain a local copy of players so we can reorder them
@@ -59,7 +67,12 @@ export function PlayerRankingsTable({
     const [moved] = updated.splice(dragIndex, 1);
     updated.splice(dropIndex, 0, moved);
     setPlayerList(updated);
+    onReorder?.(updated);
   };
+
+  useImperativeHandle(ref, () => ({
+    getPlayerList: () => playerList,
+  }));
   
   return (
     <div className="bg-gradient-card rounded-lg shadow-card overflow-hidden">
@@ -135,7 +148,11 @@ export function PlayerRankingsTable({
                     -
                   </div>
                   <div>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEditPlayer(player)}
+                    >
                       Edit
                     </Button>
                   </div>
@@ -159,7 +176,7 @@ export function PlayerRankingsTable({
       </div>
     </div>
   );
-}
+});
 
 function getTierFromRank(rank: number): string {
   if (rank <= 5) return "Tier 1";

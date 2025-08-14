@@ -3,9 +3,11 @@ import { Search, Download, Upload, Trash2, Database } from "lucide-react";
 
 interface DashboardHeaderProps {
   onSearch: (query: string) => void;
+  onSave: () => void;
+  onLoad: () => void;
 }
 
-export function DashboardHeader({ onSearch }: DashboardHeaderProps) {
+export function DashboardHeader({ onSearch, onSave, onLoad }: DashboardHeaderProps) {
   return (
     <div className="space-y-6">
       {/* Main Header */}
@@ -22,11 +24,11 @@ export function DashboardHeader({ onSearch }: DashboardHeaderProps) {
           </div>
           
           <div className="flex items-center gap-3">
-            <Button variant="dynasty" size="sm" className="gap-2">
+            <Button variant="dynasty" size="sm" className="gap-2" onClick={onSave}>
               <Upload className="w-4 h-4" />
               Save Rankings
             </Button>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={onLoad}>
               <Download className="w-4 h-4" />
               Load Rankings
             </Button>

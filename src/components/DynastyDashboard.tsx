@@ -1,26 +1,34 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DashboardHeader } from "./DashboardHeader";
 import { TierGuide } from "./TierGuide";
 import { PositionTabs } from "./PositionTabs";
 import { PositionStats } from "./PositionStats";
-import { PlayerRankingsTable } from "./PlayerRankingsTable";
+import {
+  PlayerRankingsTable,
+  type PlayerRankingsTableHandle,
+} from "./PlayerRankingsTable";
 import { DataStatus } from "./debug/DataStatus";
-import { usePlayerData } from "@/hooks/usePlayerData";
+import { usePlayerData, type Player } from "@/hooks/usePlayerData";
 
 export function DynastyDashboard() {
   const [selectedPosition, setSelectedPosition] = useState("QB");
   const [searchQuery, setSearchQuery] = useState("");
   
-  const { 
-    players, 
-    loading, 
+  const {
+    players,
+    loading,
     error,
     getPlayersByPosition,
     getVeteranPlayers,
     getYoungPlayers,
     searchPlayers,
-    refetch
+    refetch,
+    setPlayers,
   } = usePlayerData();
+
+  const veteransRef = useRef<PlayerRankingsTableHandle>(null);
+  const youngRef = useRef<PlayerRankingsTableHandle>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -28,6 +36,110 @@ export function DynastyDashboard() {
 
   const handleAddPlayer = () => {
     console.log("Add player functionality to be implemented");
+  };
+
+  const handleSaveRankings = () => {
+    const veteranPlayers =
+      veteransRef.current?.getPlayerList().map((p, index) => ({
+        ...p,
+        rank: index + 1,
+        group: "veterans",
+      })) ?? [];
+    const youngPlayers =
+      youngRef.current?.getPlayerList().map((p, index) => ({
+        ...p,
+        rank: index + 1,
+        group: "young",
+      })) ?? [];
+    const all = [...veteranPlayers, ...youngPlayers];
+    if (all.length === 0) return;
+
+    const headers = [
+      "player",
+      "pos",
+      "ecr",
+      "age",
+      "rdr_team",
+      "team_full",
+      "years_of_experience",
+      "group",
+      "rank",
+    ] as const;
+    const escape = (val: unknown) =>
+      `"${String(val ?? "").replace(/"/g, '""')}"`;
+    const csv = [
+      headers.map(escape).join(","),
+      ...all.map((row) =>
+        headers
+          .map((h) => escape((row as Record<string, unknown>)[h]))
+          .join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rankings.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    setIsDirty(false);
+  };
+
+  const handleLoadRankings = () => {
+    if (isDirty && !window.confirm("Unsaved changes will be lost. Continue?")) {
+      return;
+    }
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = String(event.target?.result || "");
+        const lines = text.trim().split(/\r?\n/);
+        const header = lines.shift();
+        if (!header) return;
+        const headers = header
+          .split(",")
+          .map((h) => h.replace(/^"|"$/g, ""));
+        const records = lines.map((line) => {
+          const values = line.match(/(?:"[^"]*(?:""[^"]*)*"|[^,])+/g) || [];
+          const obj: Record<string, string> = {};
+          headers.forEach((h, i) => {
+            const raw = values[i] || "";
+            obj[h] = raw.replace(/^"|"$/g, "").replace(/""/g, '"');
+          });
+          return obj;
+        });
+        const parsed: (Player & { group: string; rank: number })[] = records.map(
+          (r) => ({
+            player: r.player,
+            pos: r.pos,
+            ecr: Number(r.ecr),
+            age: Number(r.age),
+            rdr_team: r.rdr_team,
+            team_full: r.team_full,
+            years_of_experience:
+              r.years_of_experience === "" ? null : Number(r.years_of_experience),
+            group: r.group,
+            rank: Number(r.rank),
+          })
+        );
+        parsed.sort((a, b) =>
+          a.group === b.group ? a.rank - b.rank : a.group.localeCompare(b.group)
+        );
+        const cleaned: Player[] = parsed.map(({ group, rank, ...rest }) => rest);
+        setPlayers(cleaned);
+        setIsDirty(false);
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   const handleRetry = async () => {
@@ -102,7 +214,11 @@ export function DynastyDashboard() {
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-4 py-6 space-y-6">
-        <DashboardHeader onSearch={handleSearch} />
+        <DashboardHeader
+          onSearch={handleSearch}
+          onSaveRankings={handleSaveRankings}
+          onLoadRankings={handleLoadRankings}
+        />
         
         <TierGuide />
         
@@ -120,19 +236,23 @@ export function DynastyDashboard() {
 
         <div className="grid lg:grid-cols-2 gap-6">
           <PlayerRankingsTable
+            ref={veteransRef}
             title="Veterans"
             subtitle="3+ Years Experience"
             players={filteredVeterans}
             variant="veterans"
             onAddPlayer={handleAddPlayer}
+            onReorder={() => setIsDirty(true)}
           />
-          
+
           <PlayerRankingsTable
+            ref={youngRef}
             title="Young Talent"
             subtitle="Rookies & Sophomores"
             players={filteredYoung}
             variant="young"
             onAddPlayer={handleAddPlayer}
+            onReorder={() => setIsDirty(true)}
           />
         </div>
       </div>
